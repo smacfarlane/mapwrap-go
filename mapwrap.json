@@ -1,0 +1,17 @@
+{
+  "mapserv": "/usr/bin/mapserv",
+  "maps": [{
+    "name": "bdl",
+    "path": "/somthing/not_bdl",
+    "projections": ["geographic"],
+    "aliases": {
+      "geographic": [ "4326" ]
+    }
+  }, {
+    "name": "extras",
+    "projections": ["4326", "geographic"]
+  }, {
+    "name": "lidar",
+    "projections": ["4326"]
+  }]
+}
