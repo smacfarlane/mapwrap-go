@@ -14,6 +14,7 @@ type Config struct {
   Environment []string
   Mapserv string
   Port string 
+  Directory string
   Maps []Map
 }
 
@@ -54,6 +55,18 @@ func loadConfig() (c *Config, err error) {
   
   if err := decodeConfig(f, &config); err != nil {
     log.Printf("Error loading configuration file: %s\n", configFile)
+    log.Fatal(err)
+  }
+  //Set the working directory if it's not already set
+  if config.Directory == "" {
+    config.Directory, err = os.Getwd()
+    if err != nil {
+      log.Fatal(err)
+    } 
+  }
+  //Make sure the directory exists
+  _, err = os.Stat(config.Directory)
+  if err != nil {
     log.Fatal(err)
   }
   
