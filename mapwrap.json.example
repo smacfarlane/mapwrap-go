@@ -1,0 +1,18 @@
+{
+  "mapserv": "/usr/bin/mapserv",
+  "directory": "/www/mapwrap/maps",
+  "port": "8000",
+  "maps": [{
+    "name": "bdl"
+  }, {
+    "name": "extras",
+    "projections": ["4326", "geographic"]
+  }, {
+    "name": "lidar",
+    "path": "/test/lidar",
+    "projections": ["geographic"],
+    "aliases": {
+      "geographic": [ "4326" ]
+    }
+  }]
+}
