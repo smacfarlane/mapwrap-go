@@ -81,9 +81,7 @@ func (m Map) serveMap(w http.ResponseWriter, r *http.Request) {
   if invalidException(r.Form.Get("EXCEPTIONS")) {
     r.Form.Set("EXCEPTIONS", "xml")
   }
-
-  fmt.Printf("%v", config)
-
+  
   queryString := "QUERY_STRING=" + r.Form.Encode()
   // env := append(config.Environment, queryString)
   handler := cgi.Handler{
