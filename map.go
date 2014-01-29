@@ -3,10 +3,12 @@ package main
 import(
   "fmt"
   "strings"
+  "net"
   "net/http"
   "net/url"
   "net/http/cgi"
   "log"
+  "time"
 )
 var exceptions = []string{"blank", "image", "xml"}
 
@@ -15,6 +17,7 @@ type Map struct {
   Projections []string
   Aliases map[string][]string
   Path string 
+
 }
 
 func (m Map) Mapfile(proj string) string {
@@ -23,7 +26,6 @@ func (m Map) Mapfile(proj string) string {
   
   for projection, aliases := range m.Aliases {
     for _, alias := range aliases {
-      log.Printf("%s - %s", alias, srid)
       if alias == srid {
         srid = projection
       }
@@ -56,15 +58,14 @@ func (m Map) UrlPath() string {
 func (m Map) serveMap(w http.ResponseWriter, r *http.Request) {
   err := r.ParseForm()
   if err != nil {
-    fmt.Printf("Error parsing form")
-    log.Printf("Error parsing form")
+    //TODO: Check that this is the correct status code to useg
+    log.Printf(buildCommonLogFormat(r, time.Now(), 404, 0))
+    return
   }
   
   normalizeKeys(r.Form, strings.ToUpper)
-
   
   if r.Form.Get("REQUEST") == "" {
-    log.Printf("REQUEST is empty!: %s", r.Form.Get("REQUEST"))
     r.Form.Set("REQUEST", "GetCapabilities")
   }
 
@@ -72,26 +73,48 @@ func (m Map) serveMap(w http.ResponseWriter, r *http.Request) {
     r.Form.Set("SERVICE", "WMS")
   }
   //Don't let the user set the mapfile.
-  //Normalize and delete
   r.Form.Del("MAP")
   r.Form.Set("MAP", m.Mapfile(r.Form.Get("SRS")))
   
   //ESRI software sends an invalid value?
-  //Force it to xml unless 
+  //Force it to xml unless it's a valid value
   if invalidException(r.Form.Get("EXCEPTIONS")) {
     r.Form.Set("EXCEPTIONS", "xml")
   }
 
+  fmt.Printf("%v", config)
+
   queryString := "QUERY_STRING=" + r.Form.Encode()
-  env := append(config.Environment, queryString)
+  // env := append(config.Environment, queryString)
   handler := cgi.Handler{
     Path: config.Mapserv,
-    Dir: "/tmp",
-    Env: env,
+    Dir: config.Directory,
+    Env: []string{queryString},
   }
-  
+
   handler.ServeHTTP(w, r)
-  log.Printf("%s - %s", m.UrlPath(), env)
+
+  //Should be able to say w.Header().Get("Status"), w.Header().Get("Length(?)")
+  log.Println(buildCommonLogFormat(r, time.Now(), 200, 0))
+}
+
+func buildCommonLogFormat(r *http.Request, ts time.Time, status, size int) string {
+  username := "-"
+  host, _, err := net.SplitHostPort(r.RemoteAddr)
+
+  if err != nil {
+          host = r.RemoteAddr
+  }
+  return fmt.Sprintf("%s - %s [%s] \"%s %s %s\" %d %d",
+                  host,
+                  username,
+                  ts.Format("02/Jan/2006:15:04:05 -0700"),
+                  r.Method,
+                  r.URL.RequestURI(),
+                  r.Proto,
+                  status,
+                  size,
+          )
 }
 
 func normalizeKeys(v url.Values, normalFunc func(string) string) {

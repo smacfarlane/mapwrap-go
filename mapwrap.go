@@ -10,7 +10,6 @@ import(
 
 var configFile string
 var mapDirectory string
-var config *Config
 
 func init() {
 	const (
@@ -24,12 +23,11 @@ func init() {
   flag.StringVar(&mapDirectory, "maps", defaultMapDir, mapDirUsage)
   flag.StringVar(&mapDirectory, "m", defaultMapDir, mapDirUsage)
   
+  loadConfig()
 }
 
 func main() {
   flag.Parse()
-  // Load the configuration files
-  config, err := loadConfig()
   
   logFile, err := os.OpenFile("mapwrap.log", os.O_RDWR | os.O_CREATE | os.O_APPEND, 0644)
   if err != nil {
@@ -38,16 +36,18 @@ func main() {
   defer logFile.Close()
 
   log.SetOutput(logFile)
+  //Don't prefix the time in these logs
+  log.SetFlags(0)
   
-  for _, m := range config.Maps {
+  for _, m := range GetConfig().Maps {
     path := fmt.Sprintf("%s", m.UrlPath())
-    log.Printf("Attaching %s to %v\n", m.Name, path)
     http.HandleFunc(path, m.serveMap)
   }
 
-  err = http.ListenAndServe(":" + config.Port, nil)
+
+  err = http.ListenAndServe(":" + GetConfig().Port, nil)
   if err != nil {
-    fmt.Sprintf("Unable to start: %v", err)    
+    fmt.Printf("Unable to start: %v", err)    
   }
 
 }

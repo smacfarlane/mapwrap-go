@@ -25,12 +25,18 @@ const defaultConfig = `
 }
 `
 
-func loadConfig() (c *Config, err error) {
-  var config Config
+var config *Config
+
+func GetConfig() *Config {
+  return config
+}
+
+
+func loadConfig() {
+  var temp Config
   
-  if err = decodeConfig(bytes.NewBufferString(defaultConfig), &config); err != nil {
-    log.Println(err)
-    return nil, err
+  if err := decodeConfig(bytes.NewBufferString(defaultConfig), &temp); err != nil {
+    log.Fatal(err)
   }
   
   //Look for a configuration file in the following order:
@@ -53,39 +59,38 @@ func loadConfig() (c *Config, err error) {
     log.Fatal(err)
   }
   
-  if err := decodeConfig(f, &config); err != nil {
+  if err := decodeConfig(f, &temp); err != nil {
     log.Printf("Error loading configuration file: %s\n", configFile)
     log.Fatal(err)
   }
   //Set the working directory if it's not already set
-  if config.Directory == "" {
-    config.Directory, err = os.Getwd()
+  if temp.Directory == "" {
+    temp.Directory, err = os.Getwd()
     if err != nil {
       log.Fatal(err)
     } 
   }
   //Make sure the directory exists
-  _, err = os.Stat(config.Directory)
+  _, err = os.Stat(temp.Directory)
   if err != nil {
     log.Fatal(err)
   }
   
-  if config.Mapserv == "" {
+  if temp.Mapserv == "" {
     out, err := exec.Command("which", "mapserv").Output()
   
     if err != nil {
       log.Fatal("Error attempting to find mapserv: ", err)
     } 
-    config.Mapserv = string(out)
+    temp.Mapserv = string(out)
   }
-  _, err = exec.Command(config.Mapserv).Output()
+  _, err = exec.Command(temp.Mapserv).Output()
   if err != nil {
     log.Fatal("Error attempting to run mapserv: ", err)
   }
   
-  log.Println("Configuration Loaded")
-  
-  return &config, nil
+  config = &temp
+
 }
 
 // Decodes configuration in JSON format from the given io.Reader into
