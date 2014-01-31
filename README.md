@@ -62,4 +62,3 @@ Logfile is always in the current directory, this should be configurable.
 Check if necessary mapfiles exist on startup.
 Tests! Both test coverage and real-world. 
 Better documentation
-
