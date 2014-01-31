@@ -19,7 +19,7 @@ Mapwrap-go assumes (hopefully) sane defaults, but the following options can be c
 ```
 
 ###  Configuring maps
-Map configuration has only one required value: 'name'. It will try to determine what to do based on that name, but it's behavior can be overridden if necessary.
+Map configuration has only one required value: 'name'. It will try to determine what to do based on that name, but its behavior can be overridden if necessary.
 
 Ex:  
 ```json
@@ -28,6 +28,7 @@ Ex:
   "maps": [{
     "name": "bdl"
   }]
+}
 ```
 
 This would look in '/wms/maps' for a file named 'bdl.map', and bind http://server/bdl/ to serve that mapfile.
@@ -40,6 +41,7 @@ If you would like to change path that it binds to, you can use the 'path' option
     "name": "bdl",
     "path": "/wms/bdl"
   }]
+}
 ```
 
 Additionally, you can specify different mapfiles based on the SRS requested, and even alias them to a common name.
@@ -57,8 +59,9 @@ This would cause mapserv to look for a file named bdl_4326.map when it recives a
 
 
 ##TODO
-Logging doesn't conform to the common log format, yet. 
-Logfile is always in the current directory, this should be configurable.
-Check if necessary mapfiles exist on startup.
-Tests! Both test coverage and real-world. 
-Better documentation
+- [ ] Logging doesn't conform to the common log format, yet. 
+- [ ] Logfile is always in the current directory, this should be configurable.
+- [ ] Check if necessary mapfiles exist on startup.
+- [ ] Tests! Both test coverage and real-world. 
+- [ ] Better documentation
+
